@@ -76,7 +76,10 @@ class SpinFort(BaseTask):
                     items_awarded[u'Egg'] = egg_awarded['egg_km_walked_target']
 
                 if experience_awarded or items_awarded:
-                    awards = ', '.join(["{}x {}".format(items_awarded[x], x) for x in items_awarded if x != u'Egg'])
+                    awards = ', '.join(
+                        ["{}x {}".format(items_awarded[x], x)
+                         for x in items_awarded if x != u'Egg']) if items_awarded else 'full'
+
                     if egg_awarded is not None:
                         awards += u', {} Egg'.format(egg_awarded['egg_km_walked_target'])
                     self.emit_event(
