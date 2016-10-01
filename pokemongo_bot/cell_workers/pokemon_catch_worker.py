@@ -69,32 +69,32 @@ class PokemonCatchWorker(BaseTask):
         self.berry_threshold = self.config.get('berry_threshold', 0.35)
         self.vip_berry_threshold = self.config.get('vip_berry_threshold', 0.9)
         self.treat_unseen_as_vip = self.config.get('treat_unseen_as_vip', DEFAULT_UNSEEN_AS_VIP)
-        self.daily_catch_limit = self.config.get('daily_catch_limit', 800)
+        self.daily_catch_limit = self.config.get('daily_catch_limit', 80000)
 
         self.vanish_settings = self.config.get('vanish_settings', {})
         self.consecutive_vanish_limit = self.vanish_settings.get('consecutive_vanish_limit', 10)
-        self.rest_duration_min = getSeconds(self.vanish_settings.get('rest_duration_min', "02:00:00"))
-        self.rest_duration_max = getSeconds(self.vanish_settings.get('rest_duration_max', "04:00:00"))
+        self.rest_duration_min = getSeconds(self.vanish_settings.get('rest_duration_min', "00:30:00"))
+        self.rest_duration_max = getSeconds(self.vanish_settings.get('rest_duration_max', "01:00:00"))
 
         self.catch_throw_parameters = self.config.get('catch_throw_parameters', {})
-        self.catch_throw_parameters_spin_success_rate = self.catch_throw_parameters.get('spin_success_rate', 0.6)
-        self.catch_throw_parameters_excellent_rate = self.catch_throw_parameters.get('excellent_rate', 0.1)
-        self.catch_throw_parameters_great_rate = self.catch_throw_parameters.get('great_rate', 0.5)
-        self.catch_throw_parameters_nice_rate = self.catch_throw_parameters.get('nice_rate', 0.3)
-        self.catch_throw_parameters_normal_rate = self.catch_throw_parameters.get('normal_rate', 0.1)
-        self.catch_throw_parameters_hit_rate = self.catch_throw_parameters.get('hit_rate', 0.8)
+        self.catch_throw_parameters_spin_success_rate = self.catch_throw_parameters.get('spin_success_rate', 0.95)
+        self.catch_throw_parameters_excellent_rate = self.catch_throw_parameters.get('excellent_rate', 0.95)
+        self.catch_throw_parameters_great_rate = self.catch_throw_parameters.get('great_rate', 0.05)
+        self.catch_throw_parameters_nice_rate = self.catch_throw_parameters.get('nice_rate', 0.0)
+        self.catch_throw_parameters_normal_rate = self.catch_throw_parameters.get('normal_rate', 0.0)
+        self.catch_throw_parameters_hit_rate = self.catch_throw_parameters.get('hit_rate', 0.95)
 
         self.catchsim_config = self.config.get('catch_simulation', {})
-        self.catchsim_catch_wait_min = self.catchsim_config.get('catch_wait_min', 2)
-        self.catchsim_catch_wait_max = self.catchsim_config.get('catch_wait_max', 6)
+        self.catchsim_catch_wait_min = self.catchsim_config.get('catch_wait_min', 1)
+        self.catchsim_catch_wait_max = self.catchsim_config.get('catch_wait_max', 1)
         self.catchsim_flee_count = int(self.catchsim_config.get('flee_count', 3))
-        self.catchsim_flee_duration = self.catchsim_config.get('flee_duration', 2)
-        self.catchsim_berry_wait_min = self.catchsim_config.get('berry_wait_min', 2)
-        self.catchsim_berry_wait_max = self.catchsim_config.get('berry_wait_max', 3)
-        self.catchsim_changeball_wait_min = self.catchsim_config.get('changeball_wait_min', 2)
-        self.catchsim_changeball_wait_max = self.catchsim_config.get('changeball_wait_max', 3)
-        self.catchsim_newtodex_wait_min = self.catchsim_config.get('newtodex_wait_min', 20)
-        self.catchsim_newtodex_wait_max = self.catchsim_config.get('newtodex_wait_max', 30)
+        self.catchsim_flee_duration = self.catchsim_config.get('flee_duration', 1)
+        self.catchsim_berry_wait_min = self.catchsim_config.get('berry_wait_min', 1)
+        self.catchsim_berry_wait_max = self.catchsim_config.get('berry_wait_max', 1)
+        self.catchsim_changeball_wait_min = self.catchsim_config.get('changeball_wait_min', 1)
+        self.catchsim_changeball_wait_max = self.catchsim_config.get('changeball_wait_max', 1)
+        self.catchsim_newtodex_wait_min = self.catchsim_config.get('newtodex_wait_min', 2)
+        self.catchsim_newtodex_wait_max = self.catchsim_config.get('newtodex_wait_max', 3)
 
 
     ############################################################################
@@ -282,7 +282,7 @@ class PokemonCatchWorker(BaseTask):
         if pokemon_config.get('catch_above_cp',-1) >= 0:
             if pokemon.cp >= pokemon_config.get('catch_above_cp'):
                 catch_results['cp'] = True
-                
+
         if pokemon_config.get('catch_below_cp',-1) >= 0:
             if pokemon.cp <= pokemon_config.get('catch_below_cp'):
                 catch_results['cp'] = True
@@ -316,13 +316,13 @@ class PokemonCatchWorker(BaseTask):
             cr['cp'] = True
         elif catch_logic == 'orand':
             cr['cp'] = True,
-            cr['iv'] = True    
-        
+            cr['iv'] = True
+
         if pokemon_config.get('catch_above_ncp',-1) >= 0: cr['ncp'] = catch_results['ncp']
         if pokemon_config.get('catch_above_cp',-1) >= 0: cr['cp'] = catch_results['cp']
         if pokemon_config.get('catch_below_cp',-1) >= 0: cr['cp'] = catch_results['cp']
         if pokemon_config.get('catch_above_iv',-1) >= 0: cr['iv'] = catch_results['iv']
-        
+
         if DEBUG_ON:
             print "Debug information for match rules..."
             print "catch_results ncp = {}".format(catch_results['ncp'])
