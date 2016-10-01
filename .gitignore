@@ -133,6 +133,7 @@ configs/*
 !config.json.hunter.example
 !config.json.optimizer.example
 !auth.json.example
+!configs/config.fort.json
 
 # Virtualenv folders
 bin/
