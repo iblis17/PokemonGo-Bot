@@ -35,7 +35,7 @@ class TransferPokemon(BaseTask):
             self._release_pokemon_worst_in_group(group, 'all')
 
     def _should_work(self):
-        random_number = randrange (0,20,1) 
+        random_number = randrange (0,20,1)
         return inventory.Pokemons.get_space_left() <= max(1,self.min_free_slot - random_number)
 
     def _release_pokemon_get_groups(self):
@@ -94,7 +94,7 @@ class TransferPokemon(BaseTask):
                     order_criteria = order_criteria + ' and iv'
                 else:
                     order_criteria = 'iv'
-                    
+
         elif keep_best_custom:
             limit = keep_amount
             # not sure if the u of unicode will stay, so make it go away
@@ -117,8 +117,9 @@ class TransferPokemon(BaseTask):
                         best_pokemons.append(pokemon)
 
             transfer_pokemons = [
-                pokemon for pokemon in all_pokemons if self.should_release_pokemon(pokemon, True)]
-
+                pokemon
+                for pokemon in all_pokemons
+                if self.should_release_pokemon(pokemon, True)]
             if transfer_pokemons:
                 if best_pokemons:
                     self.emit_event(
@@ -189,7 +190,7 @@ class TransferPokemon(BaseTask):
                 release_results['cp'] = release_cp and pokemon.cp < release_cp
                 release_results['iv'] = release_iv and pokemon.iv < release_iv
                 release_results['ivcp'] = release_ivcp and pokemon.ivcp < release_ivcp
-            
+
         logic_to_function = {
             'or': lambda x, y, z: x or y or z,
             'and': lambda x, y, z: x and y and z
@@ -331,11 +332,11 @@ class TransferPokemon(BaseTask):
                 keep_best_ivcp = int(keep_best_ivcp)
             except ValueError:
                 keep_best_ivcp = 0
-                
+
             if keep_best_cp < 0 or keep_best_iv < 0 or keep_best_ivcp < 0:
                 keep_best = False
 
             if keep_best_cp == 0 and keep_best_iv == 0 and keep_best_ivcp == 0:
                 keep_best = False
-                
+
         return keep_best, keep_best_cp, keep_best_iv, keep_best_ivcp
