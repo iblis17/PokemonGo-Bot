@@ -16,6 +16,7 @@ from pokemongo_bot.base_dir import _base_dir
 from pokemongo_bot.constants import Constants
 from pokemongo_bot.inventory import Pokemons
 
+
 class CatchPokemon(BaseTask):
     SUPPORTED_TASK_API_VERSION = 1
 
@@ -57,6 +58,9 @@ class CatchPokemon(BaseTask):
         return WorkerResult.SUCCESS
 
     def get_visible_pokemon(self):
+        if self.bot.cell is None:
+            return
+
         pokemon_to_catch = []
         if 'catchable_pokemons' in self.bot.cell:
             pokemon_to_catch = self.bot.cell['catchable_pokemons']
