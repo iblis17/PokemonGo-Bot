@@ -117,7 +117,7 @@ class PokemonGoBot(object):
         self.heartbeat_counter = 0
         self.last_heartbeat = time.time()
         self.hb_locked = False # lock hb on snip
-        
+
         # Inventory refresh limiting
         self.inventory_refresh_threshold = 10
         self.inventory_refresh_counter = 0
@@ -727,7 +727,7 @@ class PokemonGoBot(object):
 
         now = time.time() * 1000
 
-        for fort in self.cell["forts"]:
+        for fort in self.cell.get("forts", []):
             timeout = fort.get("cooldown_complete_timestamp_ms", 0)
 
             if timeout >= now:
@@ -1298,7 +1298,9 @@ class PokemonGoBot(object):
         geolocator = GoogleV3(api_key=self.config.gmapkey)
         loc = geolocator.geocode(location_name, timeout=10)
 
-        return float(loc.latitude), float(loc.longitude), float(loc.altitude)
+        # return float(loc.latitude), float(loc.longitude), float(loc.altitude)
+        # return 24.789437, 120.999953, 0
+        return 25.121879, 121.713805, 0  # keelung
 
     def _get_pos_by_fav_location(self, location_name):
 
@@ -1394,8 +1396,10 @@ class PokemonGoBot(object):
                     '{}'.format(player_stats.poke_stop_visits))
 
     def get_forts(self, order_by_distance=False):
+        if not self.cell:
+            return []
         forts = [fort
-                 for fort in self.cell['forts']
+                 for fort in self.cell.get('forts', [])
                  if 'latitude' in fort and 'type' in fort]
 
         if order_by_distance:
@@ -1476,4 +1480,4 @@ class PokemonGoBot(object):
             inventory.refresh_inventory()
             self.last_inventory_refresh = now
             self.inventory_refresh_counter += 1
-            
+
