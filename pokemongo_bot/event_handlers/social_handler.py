@@ -9,6 +9,8 @@ import paho.mqtt.client as mqtt
 
 from pokemongo_bot.event_manager import EventHandler
 
+from collections import deque
+
 DEBUG_ON = False
 
 
@@ -18,25 +20,51 @@ class MyMQTTClass:
     def __init__(self, bot, clientid=None):
         self.bot = bot
         self.client_id = clientid
-        self.bot.mqtt_pokemon_list = []
+        self.bot.mqtt_pokemon_list = deque(maxlen=self.MAX_RESULTS)
         self._mqttc = None
 
     def mqtt_on_connect(self, mqttc, obj, flags, rc):
         if rc is 0:
-            self._mqttc.subscribe("pgo/#", 1)
+            self._mqttc.subscribe("pgo/#")
+            # self._mqttc.message_callback_add('pgomapcatch/all/catchable/16', self.pgomapcatch_msg)
+            # self._mqttc.subscribe("pgomapcatch/all/catchable/16", 0)
         if DEBUG_ON:
             print("rc: " + str(rc))
+
+    def pgomapcatch_msg(self, client, obj, msg):
+        if msg.topic == 'pgomapcatch/all/catchable/16':
+
+            ls = map(str.strip, msg.payload.split(','))
+
+            try:
+                pokemon = {
+                    'latitude': float(ls[0]),
+                    'longitude': float(ls[1]),
+                    'pokemon_id': int(ls[2]),
+                    'expiration_timestamp_ms': int(ls[3]),
+                    'pokemon_name': ls[4],
+                }
+
+                if pokemon['expiration_timestamp_ms'] == -1:
+                    return
+            except:
+                return
+            self.bot.mqtt_pokemon_list.append(pokemon)
+        else:
+            return
 
     def mqtt_on_message(self, mqttc, obj, msg):
         if DEBUG_ON:
             print('on message: {}'.format(msg.payload))
 
-        pokemon = json.loads(msg.payload)
+        try:
+            pokemon = json.loads(msg.payload)
+        except:
+            return
+
         if pokemon and 'encounter_id' in pokemon:
             new_list = [x for x in self.bot.mqtt_pokemon_list if x['encounter_id'] is pokemon['encounter_id']]
             if not (new_list and len(new_list) > 0):
-                if len(self.bot.mqtt_pokemon_list) > self.MAX_RESULTS:
-                    del self.bot.mqtt_pokemon_list[:]
                 self.bot.mqtt_pokemon_list.append(pokemon)
 
     def on_disconnect(self, client, userdata, rc):
@@ -83,10 +111,10 @@ class MyMQTTClass:
             return
 
     def run(self):
-        self._mqttc.connect("broker.pikabot.org", 1883, 20)
+        self._mqttc.connect("broker.pikabot.org", 1883, 10)
         while True:
             try:
-                self._mqttc.loop_forever(timeout=30.0, max_packets=100, retry_first_connection=False)
+                self._mqttc.loop_forever()
                 print('Oops disconnected ?')
                 time.sleep(20)
             except UnicodeDecodeError:
