@@ -19,8 +19,8 @@ class EvolvePokemon(BaseTask):
         self.start_time = 0
         self.evolve_list = self.config.get('evolve_list', [])
         self.donot_evolve_list = self.config.get('donot_evolve_list', [])
-        self.min_evolve_speed = self.config.get('min_evolve_speed', 25)
-        self.max_evolve_speed = self.config.get('max_evolve_speed', 30)
+        self.min_evolve_speed = self.config.get('min_evolve_speed', 10)
+        self.max_evolve_speed = self.config.get('max_evolve_speed', 15)
         self.first_evolve_by = self.config.get('first_evolve_by', 'cp')
         self.evolve_above_cp = self.config.get('evolve_above_cp', 500)
         self.evolve_above_iv = self.config.get('evolve_above_iv', 0.8)
@@ -41,7 +41,7 @@ class EvolvePokemon(BaseTask):
     def _validate_config(self):
         if isinstance(self.evolve_list, basestring):
             self.evolve_list = [str(pokemon_name).lower().strip() for pokemon_name in self.evolve_list.split(',')]
-            
+
         if isinstance(self.donot_evolve_list, basestring):
             self.donot_evolve_list = [str(pokemon_name).lower().strip() for pokemon_name in self.donot_evolve_list.split(',')]
 
@@ -77,7 +77,7 @@ class EvolvePokemon(BaseTask):
         if not self.evolve_list or self.evolve_list[0] == 'none':
             return False
         return True
-    
+
     def _use_lucky_egg(self):
         using_lucky_egg = time.time() - self.start_time < 1800
         if using_lucky_egg:
