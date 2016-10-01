@@ -8,6 +8,7 @@ import calendar
 from random import uniform
 from operator import itemgetter, methodcaller
 from datetime import datetime
+
 from pokemongo_bot import inventory
 from pokemongo_bot.item_list import Item
 from pokemongo_bot.base_task import BaseTask
@@ -34,16 +35,16 @@ class SniperSource(object):
         results = response.json()
 
         # If the results is a dict, retrieve the list from it by the given key. This will return a list afterall.
-        if isinstance(results, dict): 
-            results = results.get(self.key, []) 
-            
+        if isinstance(results, dict):
+            results = results.get(self.key, [])
+
         # If results is STILL a dict (eg. each pokemon is its own dict), need to build data from nested json (example whereispokemon.net)
         while isinstance(results,dict):
             tmpResults = []
-            for key, value in results.iteritems(): 
+            for key, value in results.iteritems():
                 tmpResults.append(value)
                 results = tmpResults
-                
+
         return results
 
     def fetch(self):
@@ -117,7 +118,7 @@ class SniperSource(object):
             if self.enabled:
                 errors = []
                 data = self.fetch_raw()
-                
+
                 # Check whether the params really exist if they have been specified like so
                 if data:
                     if self.mappings.iv.exists and self.mappings.iv.param not in data[0]:
@@ -150,7 +151,7 @@ class SniperSource(object):
             raise ValueError("Source not available")
         except:
             raise
-            
+
     def _fixname(self,name):
         name = name.replace("mr-mime","mr. mime")
         name = name.replace("farfetchd","farfetch'd")
@@ -316,6 +317,7 @@ class Sniper(BaseTask):
 
             # Teleport, so that we can see nearby stuff
             self.bot.hb_locked = True
+
             self._teleport_to(pokemon)
 
             # If social is enabled and if no verification is needed, trust it. Otherwise, update IDs!
@@ -363,6 +365,7 @@ class Sniper(BaseTask):
                 self._teleport_back(last_position)
 
             # Save target and unlock heartbeat calls
+
             self._cache(pokemon)
             self.bot.hb_locked = False
 
@@ -400,7 +403,7 @@ class Sniper(BaseTask):
                         # Wait a bit if were going to snipe again (bullets and targets left)
                         if shots < self.bullets and index < len(targets):
                             self._trace('Waiting a few seconds to teleport again to another target...')
-                            time.sleep(3)
+                            time.sleep(1)
 
         return WorkerResult.SUCCESS
 
@@ -422,12 +425,22 @@ class Sniper(BaseTask):
         return result
 
     def _get_pokemons_from_social(self):
-        if not hasattr(self.bot, 'mqtt_pokemon_list') or not self.bot.mqtt_pokemon_list:
+        if not hasattr(self.bot, 'mqtt_pokemon_list'):
             return []
 
-        self._trace('Social has returned {} pokemon(s)'.format(len(self.bot.mqtt_pokemon_list)))
+        size = len(self.bot.mqtt_pokemon_list)
+        self._trace('Social has returned {} pokemon(s)'.format(size))
+        self.logger.info('Social has returned {} pokemon(s)'.format(size))
 
-        return self._parse_pokemons(self.bot.mqtt_pokemon_list)
+        if not size:
+            time.sleep(1.5)
+            return []
+
+        def f():
+            while self.bot.mqtt_pokemon_list:
+                yield self.bot.mqtt_pokemon_list.pop()
+
+        return self._parse_pokemons(f())
 
     def _get_pokemons_from_url(self):
         results_hash_map = {}
@@ -463,7 +476,7 @@ class Sniper(BaseTask):
 
     def _hash(self, pokemon):
         # Use approximate location instead, because some IDs might be wrong. The first 4 decimal places is enough for this
-        return "{0:.4f};{1:.4f}".format(pokemon.get('latitude'), pokemon.get('longitude'))
+        return "{0:.4f};{1:.4f}".format(pokemon.get('latitude', 999.0), pokemon.get('longitude', 999.0))
 
     def _equals(self, pokemon_1, pokemon_2):
         return self._hash(pokemon_1) == self._hash(pokemon_2)
