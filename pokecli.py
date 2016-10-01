@@ -260,6 +260,14 @@ def main():
                     formatted='No player position set'
                 )
                 time.sleep(wait_time)
+            except Exception as e:
+                bot.event_manager.emit(
+                    'api_error',
+                    sender=bot,
+                    level='info',
+                    formatted=str(e)
+                )
+                raise
 
     except GeocoderQuotaExceeded:
         raise Exception("Google Maps API key over requests limit.")
